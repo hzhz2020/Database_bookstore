@@ -1,0 +1,312 @@
+﻿Checkpoint2
+
+
+a. Find the titles of all books by Pratchett that cost less than $10
+
+
+SELECT title
+FROM Author AS a, Book AS b
+WHERE Lname='Pratchett' AND a.ISBN=b.ISBN And b.sellprice<10;
+ 
+
+
+b. Give all the titles and their dates of purchase made by a single customer (you choose how to designate the customer)
+
+
+SELECT title, CDate
+FROM BOOK AS b, OCONTAIN AS oc, CORDER AS c
+WHERE c.accountName='Obama666' AND c.Ordernumber=oc.Ordernumber AND oc.ISBN=b.ISBN; 
+
+
+
+
+c. Find the titles and ISBNs for all books with less than 5 copies in stock 
+
+
+SELECT title,ISBN
+FROM BOOK
+WHERE Bquantity<5;
+
+
+
+
+d. Give all the customers who purchased a book by Pratchett and the titles of Pratchett books they purchased  (8,9,10)
+
+
+SELECT title,AccountName
+FROM CORDER AS o, BOOK AS b, OCONTAIN AS oc, AUTHOR as a
+WHERE oc.ISBN=b.ISBN AND a.Lname='Pratchett' AND o.Ordernumber=oc.Ordernumber AND a.ISBN=b.ISBN;
+
+
+
+
+e. Find the total number of books purchased by a single customer (you choose how to designate the customer)
+
+
+SELECT SUM(OQuantity)
+FROM CORDER AS c, Ocontain AS o
+WHERE c.AccountName='Obama666' AND c.Ordernumber=o.Ordernumber;
+
+
+
+
+f. Find the customer who has purchased the most books and the total number of books they have purchased
+
+
+SELECT AccountName,MAX(A)
+FROM (SELECT AccountName, SUM(OQuantity) AS A
+              FROM Corder AS c, Ocontain AS o
+              WHERE c.OrderNumber=o.OrderNumber
+              GROUP BY AccountName);
+
+
+
+
+
+
+
+
+Checkpoint3:
+
+
+a. Find the titles of all books by Pratchett that cost less than $10
+
+
+SELECT Title
+FROM Book AS b, Author AS a
+WHERE a.Lname='Pratchett' AND a.ISBN=b.ISBN AND Sellprice<10;
+
+
+ 
+b. Give all the titles and their dates of purchase made by a single customer (you choose how to designate the customer)
+
+
+SELECT Cdate, Title
+FROM Customer AS c, Corder AS co, Book AS b, Ocontain AS oc
+WHERE  c.Lname='jam' AND c.Fname='ad' AND co.AccountName=c.AccountName AND co.OrderNumber=oc.OrderNumber AND oc.ISBN=b.ISBN;
+
+
+
+
+c. Find the titles and ISBNs for all books with less than 5 copies in stock
+
+
+SELECT Title, ISBN
+FROM Book
+WHERE Bquantity<5;
+
+
+
+
+d. Give all the customers who purchased a book by Pratchett and the titles of Pratchett books they purchased
+
+
+SELECT c.Lname, c.Fname, b.Title
+FROM customer AS c, Book as b, Corder AS co, Ocontain AS oc, Author as a
+WHERE a.Lname='Pratchett' AND a.ISBN=b.ISBN AND oc.ISBN=b.ISBN AND oc.OrderNumber=co.OrderNumber AND co.AccountName=c.AccountName;
+
+
+ 
+e. Find the total number of books purchased by a single customer (you choose how to designate the customer)
+
+
+SELECT SUM(Oquantity)
+FROM Customer AS c, Corder AS co, Ocontain AS oc
+WHERE c.Lname='jam' AND c.Fname='ad' AND c.AccountName=co.AccountName AND co.OrderNumber=oc.OrderNumber; 
+
+
+
+
+f. Find the customer who has purchased the most books and the total number of books they have purchased
+
+
+SELECT Lname, Fname, MAX(m)
+FROM
+(
+SELECT SUM(Oquantity) AS m, c.Lname, c.Fname
+FROM Customer AS c, Corder AS co, Ocontain AS oc
+WHERE c.AccountName=co.AccountName AND co.OrderNumber=oc.OrderNumber
+GROUP BY c.Lname, c.Fname
+);
+
+
+
+
+
+
+
+
+
+
+Checkpoint 2 and 3 additional interesting query:
+
+
+a. List the quantity of  fiction books purchased by Obama666.
+
+
+SELECT SUM(OQUANTITY)
+FROM CUSTOMER AS CU, CORDER AS CO, OCONTAIN AS OC, BOOK AS BO
+WHERE CU.AccountName= CO.AccountName AND OC.OrderNumber=CO.OrderNumber AND OC.ISBN=BO.ISBN AND CU.AccountName='Obama666' AND BO.Category='fiction';
+
+
+
+
+b. List the title of most popular book purchased by women.
+
+
+SELECT RE.TITLE, MAX (RE.SUM_QU)  AS SUM_FEMALE
+FROM (SELECT TITLE, SUM(Oquantity) AS SUM_QU
+FROM CUSTOMER AS CU, CORDER AS CO, OCONTAIN AS OC, BOOK AS BO
+WHERE CU.ACCOUNTNAME= CO.ACCOUNTNAME AND OC.ORDERNUMBER=CO.ORDERNUMBER AND OC.ISBN=BO.ISBN AND CU.gender='f'
+GROUP BY BO.TITLE) AS RE;
+
+
+
+
+c. List the name of the most popular publisher. 
+
+
+SELECT RE.pname, MAX(RE.SUM_QU) 
+FROM (SELECT PU.pname, SUM(OC.Oquantity) AS SUM_QU
+FROM  OCONTAIN AS OC, BOOK AS BO, PUBLISHER AS PU
+WHERE OC.ISBN=BO.ISBN AND BO.pname=PU.pname
+GROUP BY PU.pname) AS RE;
+
+
+
+
+
+
+
+
+
+
+Advanced queries from checkpoint 3(without relational algebra):
+
+
+a. Provide a list of customer names, along with the total dollar amount each customer has spent.
+
+
+SELECT CU.FNAME, CU.LNAME, SUM(TEMP.OTATAL) AS TOTAL_SPENT
+FROM CUSTOMER AS CU, CORDER AS CO, (Select  OC.ORDERNUMBER, SUM(OC.Oquantity*BO.SELLPRICE) AS OTATAL 
+FROM OCONTAIN AS OC, BOOK AS BO
+WHERE OC. ISBN=BO.ISBN
+GROUP BY OC.ORDERNUMBER) AS TEMP
+WHERE CU.ACCOUNTNAME=CO.ACCOUNTNAME AND TEMP.ORDERNUMBER=CO.ORDERNUMBER
+GROUP BY CU.FNAME,CU.LNAME;
+
+
+
+
+b. Provide a list of customer names and e-mail addresses for customers who have spent more than the average customer.
+
+
+SELECT CU.FNAME, CU.LNAME, CU.email
+FROM CUSTOMER AS CU, CORDER AS CO, (Select  OC.ORDERNUMBER, SUM(OC.Oquantity*BO.SELLPRICE) AS OTATAL 
+                                    FROM OCONTAIN AS OC, BOOK AS BO
+                                    WHERE OC. ISBN=BO.ISBN
+                                    GROUP BY OC.ORDERNUMBER) AS TEMP
+WHERE CU.ACCOUNTNAME=CO.ACCOUNTNAME AND TEMP.ORDERNUMBER=CO.ORDERNUMBER
+GROUP BY CU.FNAME,CU.LNAME
+HAVING    SUM(TEMP.OTATAL)> (SELECT AVG(RE1.TOTAL_SPENT)
+                                                            FROM  ( SELECT  SUM(TEMP.OTATAL) AS TOTAL_SPENT
+                                                                        FROM CUSTOMER AS CU, CORDER AS CO, (Select  OC.ORDERNUMBER, SUM(OC.Oquantity*BO.SELLPRICE) AS OTATAL 
+                                                                                           FROM OCONTAIN AS OC, BOOK AS BO
+                                                                                           WHERE OC. ISBN=BO.ISBN
+                                                                                           GROUP BY OC.ORDERNUMBER) AS TEMP
+               WHERE CU.ACCOUNTNAME=CO.ACCOUNTNAME AND TEMP.ORDERNUMBER=CO.ORDERNUMBER
+               GROUP BY CU.FNAME,CU.LNAME) AS RE1) ;
+
+
+
+
+
+
+c. Provide a list of the titles in the database and associated total copies sold to customers, sorted from the title that has sold the most individual copies to the title that has sold the least.
+
+
+SELECT RE.TITLE, RE.SUM_QU
+FROM (SELECT TITLE, SUM(Oquantity) AS SUM_QU
+           FROM CUSTOMER AS CU, CORDER AS CO, OCONTAIN AS OC, BOOK AS BO
+           WHERE CU.ACCOUNTNAME= CO.ACCOUNTNAME AND OC.ORDERNUMBER=CO.ORDERNUMBER AND OC.ISBN=BO.ISBN
+           GROUP BY BO.TITLE) AS RE
+ORDER BY RE.SUM_QU DESC;
+
+
+
+
+d. Provide a list of the titles in the database and associated dollar totals for copies sold to customers, sorted from the title that has sold the highest dollar amount to the title that has sold the smallest.
+
+
+SELECT RE.TITLE, RE.TOTAL_SALE
+FROM (SELECT TITLE, SUM(Oquantity)*BO.SELLPRICE AS TOTAL_SALE
+           FROM CUSTOMER AS CU, CORDER AS CO, OCONTAIN AS OC, BOOK AS BO
+           WHERE CU.ACCOUNTNAME= CO.ACCOUNTNAME AND OC.ORDERNUMBER=CO.ORDERNUMBER AND OC.ISBN=BO.ISBN
+           GROUP BY BO.TITLE) AS RE
+ORDER BY RE.TOTAL_SALE DESC;
+
+
+
+
+e. Find the most popular author in the database (i.e. the one who has sold the most books)
+
+
+SELECT RE.FNAME, RE.LNAME, MAX(RE.SUM_QU)
+FROM (SELECT AU.FNAME,AU.LNAME, SUM(Oquantity) AS SUM_QU
+             FROM CUSTOMER AS CU, CORDER AS CO, OCONTAIN AS OC, BOOK AS BO, AUTHOR AS AU
+             WHERE CU.ACCOUNTNAME= CO.ACCOUNTNAME AND OC.ORDERNUMBER=CO.ORDERNUMBER AND OC.ISBN=BO.ISBN AND AU.ISBN=BO.ISBN
+            GROUP BY AU.FNAME, AU.LNAME) AS RE;
+
+
+
+
+f. Find the most profitable author in the database for this store (i.e. the one who has brought in the most money)
+
+
+SELECT RE.FNAME,RE.LNAME, MAX(TOTAL_SALE)
+ FROM (SELECT AU.FNAME,AU.LNAME, SUM(Oquantity)*BO.SELLPRICE AS TOTAL_SALE
+               FROM CUSTOMER AS CU, CORDER AS CO, OCONTAIN AS OC, BOOK AS BO, AUTHOR AS AU
+               WHERE CU.ACCOUNTNAME= CO.ACCOUNTNAME AND OC.ORDERNUMBER=CO.ORDERNUMBER AND OC.ISBN=BO.ISBN AND AU.ISBN=BO.ISBN
+               GROUP BY AU.FNAME, AU.LNAME) AS RE;
+
+
+
+
+g. Provide a list of customer information for customers who purchased anything written by the most profitable author in the database.
+
+
+SELECT DISTINCT CU1.LNAME,CU1.FNAME
+ FROM CUSTOMER AS CU1,CORDER AS CO1, OCONTAIN AS OC1
+ WHERE CU1.ACCOUNTNAME= CO1.ACCOUNTNAME AND OC1.ORDERNUMBER=CO1.ORDERNUMBER AND OC1.ISBN IN (
+         SELECT AU3.ISBN
+         FROM (SELECT RE.FNAME,RE.LNAME, MAX(TOTAL_SALE)
+                   FROM (SELECT AU.FNAME,AU.LNAME, SUM(Oquantity)*BO.SELLPRICE AS TOTAL_SALE
+                          FROM CUSTOMER AS CU, CORDER AS CO, OCONTAIN AS OC, BOOK AS BO, AUTHOR AS AU
+                          WHERE CU.ACCOUNTNAME= CO.ACCOUNTNAME AND OC.ORDERNUMBER=CO.ORDERNUMBER AND OC.ISBN=BO.ISBN AND AU.ISBN=BO.ISBN
+                           GROUP BY AU.FNAME, AU.LNAME) AS RE) AS RE2 INNER JOIN AUTHOR AS AU3 ON RE2.FNAME=AU3.FNAME AND RE2.LNAME=AU3.LNAME);
+
+
+
+
+h.Provide the list of authors who wrote the books purchased by the customers who have spent more than the average customer.
+
+
+SELECT DISTINCT AU5.LNAME, AU5.FNAME
+FROM AUTHOR AS AU5, (SELECT OC2.ISBN
+                FROM CORDER AS CO2, OCONTAIN AS OC2,(SELECT CU.ACCOUNTNAME
+                                 FROM CUSTOMER AS CU, CORDER AS CO, (Select  OC.ORDERNUMBER, SUM(OC.Oquantity*BO.SELLPRICE) AS OTATAL 
+                                                  FROM OCONTAIN AS OC, BOOK AS BO
+                                                  WHERE OC. ISBN=BO.ISBN
+                                                  GROUP BY OC.ORDERNUMBER) AS TEMP
+                                WHERE CU.ACCOUNTNAME=CO.ACCOUNTNAME AND TEMP.ORDERNUMBER=CO.ORDERNUMBER
+                                GROUP BY CU.FNAME,CU.LNAME
+                                HAVING    SUM(TEMP.OTATAL)> (SELECT AVG(RE1.TOTAL_SPENT)
+                                                                        FROM  ( SELECT  SUM(TEMP.OTATAL) AS TOTAL_SPENT
+                                                                                        FROM CUSTOMER AS CU, CORDER AS CO, (Select  OC.ORDERNUMBER, SUM(OC.Oquantity*BO.SELLPRICE) AS OTATAL 
+                                                                                                                  FROM OCONTAIN AS OC, BOOK AS BO
+                                                                                                                  WHERE OC. ISBN=BO.ISBN
+                                                                                                                 GROUP BY OC.ORDERNUMBER) AS TEMP
+                                                                                       WHERE CU.ACCOUNTNAME=CO.ACCOUNTNAME AND TEMP.ORDERNUMBER=CO.ORDERNUMBER
+                                                                                       GROUP BY CU.FNAME,CU.LNAME) AS RE1) ) AS AVGUSR
+               WHERE AVGUSR.ACCOUNTNAME=CO2.ACCOUNTNAME AND CO2.ORDERNUMBER=OC2.ORDERNUMBER) AS BOISBN
+WHERE BOISBN.ISBN=AU5.ISBN;

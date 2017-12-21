@@ -1,0 +1,81 @@
+﻿1. Add a New Book To the Database
+insert into publisher 
+values ('z', '6143338792', '54338', '476 west ave ', 'apt 2', 'CA');
+insert into book
+values ('7654398724', 'z', ' Database System ', ' 33.5', '54.89', '5', '18', '2010', 'engineer' );
+
+
+2. Add a publisher into database
+insert into publisher 
+values ('v', '6187929986', '78338', '876 north ave ', 'apt 2', 'CA');
+
+
+3. Add an author into database
+insert into publisher 
+values('Y', '5692753687', '657390', 'Neil Str. ', ' #2 ', 'NY)');
+
+
+insert into book
+values ('78293640', 'Y', 'NetWork', '8.88', '16.73', '2', '9', '2008', 'textbook' );
+
+
+insert into author
+values('78293640', 'Susan', 'JK');
+
+
+4. Add a customer into database
+insert into customer
+values('YYY', 'harry', 'wu', '7263736',' u768ug','1/1/97', 'm', '6652@gmail.com');
+
+
+
+
+1.Delete a new book
+
+
+delete from Author
+where ISBN = '0471363049';  
+
+
+delete from Stored_in
+where ISBN = '0471363049';
+
+
+delete from Ocontain
+where ISBN = '0471363049';
+ 
+2.Delete a publisher into database
+
+
+delete from Book
+where Pname = 'MIT Press';
+
+
+delete from publisher
+where Pname = 'MIT Press';
+
+
+3. Delete an author into database
+
+
+delete from Author
+where Fname = 'Mark' AND Lname = 'Grinblatt)';
+
+
+4. Delete a customer into database
+
+
+Delete from BillingAddress
+where AccountName = 'S';
+
+
+Delete from Corder
+where AccountName = 'S';
+
+
+Delete from CreditCard
+where AccountName = 'S';
+
+
+Delete from Shippingaddress
+where AccountName = 'S';

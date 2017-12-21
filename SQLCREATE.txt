@@ -1,0 +1,184 @@
+﻿CREATE TABLE AUTHOR
+(ISBN varchar(25) not null,
+ Fname varchar(15) not null,
+ Lname varchar(15) not null,
+ primary key(Fname,Lname,ISBN),
+ foreign key(ISBN) references BOOK(ISBN)
+)
+
+
+CREATE TABLE BOOK
+(ISBN varchar(25) not null,
+ Pname varchar(15) ,
+ Title varchar(15) not null,
+ Purchaseprice double, 
+ Sellprice double,
+ Minimumquantity int,
+ BQuantity int,
+ Year int,
+ Category varchar(15),
+ primary key(ISBN),
+ foreign key(Pname) references PUBLISHER(Pname)
+)
+
+
+CREATE TABLE BillingAddress
+(AccountName varchar(15) not null,
+ Zipcode int not null,
+ addressline1 varchar(150) not null,
+ addressline2 varchar(150) not null,
+ state varchar(20) not null,
+ primary key(AccountName,state,addressline1,addressline2,zipcode),
+ foreign key(AccountName) references CUSTOMER(AcocuntName)
+)
+
+
+CREATE TABLE CONTAINED_IN
+(ISBN varchar(25) not null,
+ Wordernumber int not null,
+ Wquantity int,
+ primary key(ISBN,Wordernumber),
+ foreign key(ISBN) references BOOK(ISBN),
+ foreign key(Wordernumber) references WORDER(Wordernumber)
+)
+
+
+CREATE TABLE CORDER
+(OrderNumber int not null,
+ AccountName varchar(15) not null,
+ Shippingzipcode int not null,
+ Shippingstate varchar(20) not null,
+ Shippingaddressline1 varchar(150) not null,
+ Shippingaddressline2 varchar(150),
+ billingzipcode int not null,
+ Billingstate varchar(20) not null,
+ Billingaddressline1 varchar(150) not null,
+ Billingaddressline2 varchar(150),
+ Status varchar(30) not null,
+ Cdate Timestamp, 
+ CreditCardNumber varchar(20) not null,
+ CreditCardExpiration Timestamp,
+ primary key(OrderNumber),
+ foreign key(AccountName) references CUSTOMER(AccountName)
+)
+
+
+CREATE TABLE CUSTOMER
+(AccountName varchar(15) not null,
+ Lname varchar(15) not null,
+ Fname varchar(15) not null,
+ Tel varchar(15) not null,
+ Password varchar(9) not null,
+ Birthdate date,
+ Gender char(1),
+ Email varchar(20),
+ primary key(AccountName)
+)
+
+
+CREATE TABLE CreditCard
+(AccountName varchar(15) not null,
+ Number int not null,
+ Expiration Timestamp not null,
+ primary key(AccountName,Number,Expiration),
+ foreign key(AccountName) references CUSTOMER(AcocuntName)
+)
+
+
+CREATE TABLE OCONTAIN
+(OrderNumber int not null,
+ ISBN varchar(25) not null,
+ OQuantity int,
+ primary key(OrderNumber,ISBN),
+ foreign key(ISBN) references BOOK(ISBN),
+ foreign key(OrderNumber) references CORDER(OrderNumber)
+)
+
+
+CREATE TABLE PUBLISHER
+(Pname varchar(15) not null,
+ Ptel varchar(15),
+ zipcode int,
+ addressline1 varchar(150),
+ addressline2 varchar(150),
+ state varchar(20),
+ primary key(Pname)
+)
+
+
+CREATE TABLE STORED_IN
+(ISBN varchar(25) not null,
+ Wname varchar(15) not null,
+ Quantity int,
+ primary key(ISBN,Wname),
+ foreign key(Wname) references WAREHOUSE(Wname),
+ foreign key(ISBN) references BOOK(ISBN)
+)
+
+
+CREATE TABLE SUPPLIERS
+(Sname varchar(15) not null,
+ Stel varchar(15),
+ zipcode int,
+ addressline1 varchar(150),
+ addressline2 varchar(150),
+ state varchar(20),
+ primary key(Sname)
+)
+
+
+CREATE TABLE ShippingAddress
+(AccountName varchar(15) not null,
+ Zipcode int,
+ addressline1 varchar(150) not null,
+ addressline2 varchar(150),
+ state varchar(20) not null,
+ primary key(AccountName,state,addressline1,addressline2,Zipcode),
+ foreign key(AccountName) references CUSTOMER(AcocuntName)
+)
+
+
+CREATE TABLE WAREHOUSE
+(Wname varchar(15) not null,
+ Wtel varchar(15),
+ zipcode int,
+ addressline1 varchar(150),
+ addressline2 varchar(150),
+ state varchar(20),
+ primary key(Wname)
+)
+
+
+CREATE TABLE WORDER
+(Wordernumber int not null,
+ Wname varchar(15),
+ Sname varchar(15),
+ Wdate Timestamp,
+ primary key(Wordernumber),
+ foreign key(Wname) references WAREHOUSE(Wname),
+ foreign key(Sname) references SUPPLIER(Sname)
+)
+
+
+CREATE VIEW "POPULAR_BOOK" AS  SELECT BO.TITLE, BO.ISBN, BO.CATEGORY, SUM(Oquantity) AS SUM_QU
+FROM CUSTOMER AS CU, CORDER AS CO, OCONTAIN AS OC, BOOK AS BO
+WHERE CU.ACCOUNTNAME= CO.ACCOUNTNAME AND OC.ORDERNUMBER=CO.ORDERNUMBER AND OC.ISBN=BO.ISBN AND CU.gender='f'
+GROUP BY BO.TITLE
+
+
+CREATE VIEW "purchasing_behavoir" AS     SELECT CU.AccountName, CU.Fname, CU.Lname, SUM(OQUANTITY)
+FROM CUSTOMER AS CU, CORDER AS CO, OCONTAIN AS OC, BOOK AS BO
+WHERE CU.AccountName = CO.AccountName AND OC.OrderNumber = CO.OrderNumber AND OC.ISBN = BO.ISBN AND BO.Category = 'fiction'
+GROUP BY CU.AccountName
+
+
+CREATE INDEX accountname_index ON Corder (AccountName)
+
+
+CREATE INDEX author_index ON AUTHOR (Fname, Lname)
+
+
+CREATE INDEX category_index ON BOOK (Category)
+
+
+CREATE INDEX sellprice_index ON BOOK (Sellprice ASC)
